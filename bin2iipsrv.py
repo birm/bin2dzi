@@ -9,6 +9,7 @@ import os
 
 ##OPERATIONS (about)
 # reads right to left, perfoming operations, last return is rendered
+# datatype=uint8
 # ops=1SCALTHRESHOLDEAND2
 # threshold=0.6
 # scales mat1 to [0,1], result elementiwse if gte 0.6, logical and with mat2
@@ -17,12 +18,11 @@ import os
 # Helper Functions
 
 
-def mat_in(data, size, dt):
+def mat_in(data, dt):
     """Get a matrix from a base64 string or a file path.
 
     Args:
         data (str): a base64 string prepended with 'b64' or a file path
-        size (int): the major axis size of the matrix
         dt (str): a string representation of the datatype to be used
 
     Returns:
@@ -109,12 +109,13 @@ def about_bin2iip():
 
 @app.route("/data/")
 def metadata_get():
+    dt = request.args.get("datatype")
     mats = []
     # support up to 9 matrix objects (single character in ops)
     for i in range(1, 9):
         k = "mat"+str(i)
         if k in request.args:
-            mats.push(request.args[k])
+            mats.push(mat_in(request.args.get(k), dt))
             continue
         else:
             break
