@@ -126,8 +126,9 @@ def about_bin2iip():
     return "bin2iip! Documentation coming soon!"
 
 
-@app.route("/data/")
-def metadata_get():
+# generate the dzi url
+@app.route("/dzi")
+def link_get():
     dt = request.args.get("datatype")
     mats = []
     # support up to 9 matrix objects (single character in ops)
@@ -142,9 +143,13 @@ def metadata_get():
     request.args.get("threshold")
     return "bin2iip! Documentation coming soon!"
 
+# the svs url for metadata
+@app.route("/img/<uid>/")
+def metadata_get(uid):
+    return "bin2iip! Documentation coming soon!"
 
-@app.route("/img/<level>/<fn>")
-def image_get(level, fn):
+@app.route("/img/<uid>/<level>/<fn>")
+def image_get(uid, level, fn):
     # support up to 9 matrix objects (single character in ops)
     for i in range(1, 9):
         k = "mat"+str(i)
