@@ -98,15 +98,20 @@ def operate(mat_list, operations, threshold):
 # IIP related dunctions
 
 # get pyramidal image file at position for mat
-
-
 def mat_img(mat, zoom, pos, options):
     return 0
+
 # metadata file generation
-
-
 def metadata(mat, options):
-    return 0
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+'<Image xmlns="http://schemas.microsoft.com/deepzoom/2008"\n' +
+       'Format="png"\n' +
+       'Overlap="0"\n' +
+       'TileSize="' + 256 + '" >\n' +
+    '<Size Height="' + 7898 + '"\n' +
+          'Width="' + 2565 + '"/>\n' +
+    '</Image>'
+    return xml
 
 # TODO needs to eventually associate data/ops with a uid (i.e. cache sessions)
 # we want not to waste uids (and calculation involved)
