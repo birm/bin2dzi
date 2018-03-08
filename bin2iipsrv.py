@@ -107,9 +107,9 @@ def metadata(mat, options):
 '<Image xmlns="http://schemas.microsoft.com/deepzoom/2008"\n' +
        'Format="png"\n' +
        'Overlap="0"\n' +
-       'TileSize="' + 256 + '" >\n' +
-    '<Size Height="' + 7898 + '"\n' +
-          'Width="' + 2565 + '"/>\n' +
+       'TileSize="' + options.get(tilesize, 256) + '" >\n' +
+    '<Size Height="' + mat.shape[1] + '"\n' +
+          'Width="' +  mat.shape[0] + '"/>\n' +
     '</Image>'
     return xml
 
