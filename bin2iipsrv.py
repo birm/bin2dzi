@@ -10,7 +10,7 @@ import os
 ##OPERATIONS (about)
 # reads right to left, perfoming operations, last return is rendered
 # datatype=uint8
-# ops=1SCALTHRESHOLDEAND2
+# ops=sta (scale, threshold, and)
 # threshold=0.6
 # scales mat1 to [0,1], result elementiwse if gte 0.6, logical and with mat2
 # transparency on [0,1] expected
@@ -81,6 +81,20 @@ def mat_not(mat1, mat2):
 def mat_xor(mat1, mat2):
     return numpy.logical_xor(mat1, mat2)
 
+# work through the instructions
+def operate(mat_list, operations, threshold):
+    dual_ops = {"a": mat_and, "o": mat_or, "n": mat_not, "x": mat_xor}
+    mat = mat_list.pop(0)
+    for op in operations:
+        op = op.lower()
+        if op == "s":
+            mat = single_ops[op](mat)
+        elif op == "t":
+            mat = single_ops[op](mat, threshold)
+        elif op in dual_ops.keys():
+            mat = dual_ops[op](mat,mat_list.pop(0))
+    return mat
+
 # IIP related dunctions
 
 # get pyramidal image file at position for mat
@@ -124,8 +138,8 @@ def metadata_get():
     return "bin2iip! Documentation coming soon!"
 
 
-@app.route("/img/")
-def image_get():
+@app.route("/img/<level>/<fn>")
+def image_get(level, fn):
     # support up to 9 matrix objects (single character in ops)
     for i in range(1, 9):
         k = "mat"+str(i)
