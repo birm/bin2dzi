@@ -4,13 +4,18 @@ import pypng
 import base64
 import os
 
+#TODO may want to replace with better cache method
+CACHE = {}
+
 # DATA LOADING (about)
 # ...?mat1=(filepath or base64)&mat2=....
 
 ##OPERATIONS (about)
-# reads right to left, perfoming operations, last return is rendered
+# first matrix is put on stack
+# left to right, scale and threshold operate on stack only
+# other operations apply the result of old stack and next matrix to stack
 # datatype=uint8
-# ops=sta (scale, threshold, and)
+# ops=sta (short for: scale, threshold, and)
 # threshold=0.6
 # scales mat1 to [0,1], result elementiwse if gte 0.6, logical and with mat2
 # transparency on [0,1] expected
@@ -82,9 +87,18 @@ def mat_xor(mat1, mat2):
     return numpy.logical_xor(mat1, mat2)
 
 # work through the instructions
-def operate(mat_list, operations, threshold):
+def operate(mat_stack, operations, threshold):
+    """Execute a stack of operations, in single-char string form, on a matrix stack
+
+    Args:
+        mat_stack (list of numpy.matrix): the matrix stack
+        operations (str): the operation stack
+        threshold (float): the threshold for the threshold operation
+    Returns:
+        mat: a numpy matrix of the result
+    """
     dual_ops = {"a": mat_and, "o": mat_or, "n": mat_not, "x": mat_xor}
-    mat = mat_list.pop(0)
+    mat = mat_stack.pop(0)
     for op in operations:
         op = op.lower()
         if op == "s":
@@ -92,7 +106,7 @@ def operate(mat_list, operations, threshold):
         elif op == "t":
             mat = single_ops[op](mat, threshold)
         elif op in dual_ops.keys():
-            mat = dual_ops[op](mat,mat_list.pop(0))
+            mat = dual_ops[op](mat,mat_stack.pop(0))
     return mat
 
 # IIP related dunctions
@@ -139,25 +153,26 @@ def link_get():
             continue
         else:
             break
-    request.args.get("ops")
-    request.args.get("threshold")
-    return "bin2iip! Documentation coming soon!"
+    options = {}
+    uid = ""
+    # hash of params in deterministic order
+    if not uid in cache:
+        CACHE[uid] = {"mat": operate(mats, request.args.get("ops"), request.args.get("threshold")), "options": options}
+    return "/img/"+uid
 
 # the svs url for metadata
 @app.route("/img/<uid>/")
 def metadata_get(uid):
-    return "bin2iip! Documentation coming soon!"
+    # it should be in cache
+    if uid in CACHE:
+        return metadata(CACHE[uid].mat, CACHE[uid].options)
+    else:
+        return 404
 
 @app.route("/img/<uid>/<level>/<fn>")
 def image_get(uid, level, fn):
-    # support up to 9 matrix objects (single character in ops)
-    for i in range(1, 9):
-        k = "mat"+str(i)
-        if k in request.args:
-            mats.push(request.args[k])
-            continue
-        else:
-            break
-    request.args.get("ops")
-    request.args.get("threshold")
+    if uid in CACHE:
+        return mat_img(CACHE[uid].mat, level, fn, CACHE[uid].options)
+    else:
+        return 404
     return "bin2iip! Documentation coming soon!"
