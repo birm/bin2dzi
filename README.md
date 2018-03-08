@@ -1,2 +1,2 @@
-# bin2iip
-Binary Data and Operations to IIP Images
+# bin2dzi
+Binary Data and Operations to DZI Images
