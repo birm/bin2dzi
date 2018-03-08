@@ -113,6 +113,21 @@ def operate(mat_stack, operations, threshold):
 
 # get pyramidal image file at position for mat
 def mat_img(mat, zoom, pos, options):
+    p_img = 2.0^pos# how many pixels is the whole mat at this level?
+    ppe = p_img/mat.shape[0] # how many pixels per elem at this level?
+    if ppe < 1.0:
+        # interpolative case
+        pass
+    elif ppe < 16.0:
+        # extrapolative case
+        pass
+    else
+        # don't blow up the pixels too much
+        return -1
+    # pos to pos x and pos y
+    # which elements are we worried about
+    # cropping?
+    # make it
     return 0
 
 # metadata file generation
@@ -139,7 +154,7 @@ def set_cache(args):
         else:
             break
     options = {}
-    uid = ""
+    uid = str(hash(str(args)))[1:]
     # hash of params in deterministic order
     if not uid in cache:
         CACHE[uid] = {"mat": operate(mats, request.args.get("ops"), request.args.get("threshold")), "options": options}
