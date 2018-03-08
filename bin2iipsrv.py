@@ -1,6 +1,6 @@
 import flask
 import numpy
-import pypng
+import png
 import base64
 import os
 
@@ -117,18 +117,33 @@ def mat_img(mat, zoom, pos, options):
 
 # metadata file generation
 def metadata(mat, options):
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
-'<Image xmlns="http://schemas.microsoft.com/deepzoom/2008"\n' +
+    xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<Image xmlns="http://schemas.microsoft.com/deepzoom/2008"\n'
        'Format="png"\n' +
        'Overlap="0"\n' +
-       'TileSize="' + options.get(tilesize, 256) + '" >\n' +
-    '<Size Height="' + mat.shape[1] + '"\n' +
-          'Width="' +  mat.shape[0] + '"/>\n' +
-    '</Image>'
+       'TileSize="' + options.get(tilesize, 256) + '" >\n'
+    '<Size Height="' + mat.shape[1] + '"\n'
+          'Width="' +  mat.shape[0] + '"/>\n'
+    '</Image>')
     return xml
 
-# TODO needs to eventually associate data/ops with a uid (i.e. cache sessions)
-# we want not to waste uids (and calculation involved)
+def set_cache(args):
+    dt = args.get("datatype")
+    mats = []
+    # support up to 9 matrix objects (single character in ops)
+    for i in range(1, 9):
+        k = "mat"+str(i)
+        if k in request.args:
+            mats.push(mat_in(args.get(k), dt))
+            continue
+        else:
+            break
+    options = {}
+    uid = ""
+    # hash of params in deterministic order
+    if not uid in cache:
+        CACHE[uid] = {"mat": operate(mats, request.args.get("ops"), request.args.get("threshold")), "options": options}
+    return uid
 
 
 # ROUTES
@@ -143,21 +158,7 @@ def about_bin2iip():
 # generate the dzi url
 @app.route("/dzi")
 def link_get():
-    dt = request.args.get("datatype")
-    mats = []
-    # support up to 9 matrix objects (single character in ops)
-    for i in range(1, 9):
-        k = "mat"+str(i)
-        if k in request.args:
-            mats.push(mat_in(request.args.get(k), dt))
-            continue
-        else:
-            break
-    options = {}
-    uid = ""
-    # hash of params in deterministic order
-    if not uid in cache:
-        CACHE[uid] = {"mat": operate(mats, request.args.get("ops"), request.args.get("threshold")), "options": options}
+    set_cache(request.args)
     return "/img/"+uid
 
 # the svs url for metadata
@@ -175,4 +176,3 @@ def image_get(uid, level, fn):
         return mat_img(CACHE[uid].mat, level, fn, CACHE[uid].options)
     else:
         return 404
-    return "bin2iip! Documentation coming soon!"
