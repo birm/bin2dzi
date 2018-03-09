@@ -4,6 +4,7 @@ import scipy
 import png
 import base64
 import os
+import PIL
 
 #TODO may want to replace with better cache method
 CACHE = {}
@@ -117,19 +118,20 @@ def mat_img(mat, zoom, pos, options):
     p_img = 2.0^zoom# how many pixels is the whole mat at this level?
     ppe = p_img/mat.shape[0] # how many pixels per elem at this level?
     if ppe > 16.0:
-        # pixels too big, don't render
+        # TODO pixels too big, don't render
         pass
     pos = pos.split("_")
-    full_img = scipy.misc.imresize(mat, (p_img, p_img))
-    # get the coords in this image
-    # get the appropriate data
     ts = options.get(tilesize, 256)
-    bounds = [pos[0]*ts, pos[0]*(ts+1), pos[1]*ts, pos[1]*(ts+1)] # xmin xmax ymin ymax
-    # TODO offsets for cropped elements?
-    # TODO how do I want to render the png?
-    # TODO value as alpha, take in options.color
-    options.color
-    return 0
+    ept = ts/ppe
+    bounds = [pos[0]*ept, pos[0]*(ept+1), pos[1]*ept, pos[1]*(ept+1)] # xmin xmax ymin ymax
+    # is it binary?
+    submat = mat(bounds[0]:bounds[1], bounds[2]:bounds[3])
+    rgba = np.zeros((ts, ts, 3), dtype=np.uint8)
+    rgba[..., 0] = int(options.color[0:2], 16)
+    rgba[..., 1] = int(options.color[2:4], 16)
+    rgba[..., 2] = int(options.color[4:6], 16)
+    rgba[..., 3] = scipy.misc.imresize(submat, (ts, ts))
+    return PIL.Image.fromarray(rgba, "RGBA")
 
 # metadata file generation
 def metadata(mat, options):
@@ -155,13 +157,18 @@ def set_cache(args):
         else:
             break
     options = {}
-    options.color = request.args.get("color", "blue")
+    options.color = request.args.get("color", "4280f4") # hex without "#"
     uid = str(hash(str(args)))[1:]
     # hash of params in deterministic order
     if not uid in cache:
         CACHE[uid] = {"mat": operate(mats, args.get("ops"), args.get("threshold")), "options": options}
     return uid
 
+def send_img(pil_img):
+    img_io = StringIO()
+    pil_img.save(img_io, 'PNG', quality=100)
+    img_io.seek(0)
+    return send_file(img_io, mimetype='image/jpeg')
 
 # ROUTES
 app = flask.Flask(__name__)
@@ -190,6 +197,6 @@ def metadata_get(uid):
 @app.route("/img/<uid>/<level>/<fn>")
 def image_get(uid, level, fn):
     if uid in CACHE:
-        return mat_img(CACHE[uid].mat, level, fn, CACHE[uid].options)
+        return send_img(mat_img(CACHE[uid].mat, level, fn, CACHE[uid].options))
     else:
         return 404
