@@ -1,5 +1,6 @@
 import flask
 import numpy
+import scipy
 import png
 import base64
 import os
@@ -115,19 +116,10 @@ def operate(mat_stack, operations, threshold):
 def mat_img(mat, zoom, pos, options):
     p_img = 2.0^pos# how many pixels is the whole mat at this level?
     ppe = p_img/mat.shape[0] # how many pixels per elem at this level?
-    if ppe < 1.0:
-        # interpolative case
+    if ppe > 16.0:
+        # pixels too big, don't render
         pass
-    elif ppe < 16.0:
-        # extrapolative case
-        pass
-    else
-        # don't blow up the pixels too much
-        return -1
-    # pos to pos x and pos y
-    # which elements are we worried about
-    # cropping?
-    # make it
+    full_img = scipy.misc.imresize(mat, (p_img, p_img))
     return 0
 
 # metadata file generation
