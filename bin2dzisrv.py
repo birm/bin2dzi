@@ -125,7 +125,7 @@ def mat_img(mat, zoom, pos, options):
     ept = ts/ppe
     bounds = [pos[0]*ept, pos[0]*(ept+1), pos[1]*ept, pos[1]*(ept+1)] # xmin xmax ymin ymax
     # is it binary?
-    submat = mat(bounds[0]:bounds[1], bounds[2]:bounds[3])
+    submat = mat(slice(bounds[0],bounds[1]), slice(bounds[2],bounds[3]))
     rgba = np.zeros((ts, ts, 3), dtype=np.uint8)
     rgba[..., 0] = int(options.color[0:2], 16)
     rgba[..., 1] = int(options.color[2:4], 16)
