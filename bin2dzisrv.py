@@ -114,12 +114,21 @@ def operate(mat_stack, operations, threshold):
 
 # get pyramidal image file at position for mat
 def mat_img(mat, zoom, pos, options):
-    p_img = 2.0^pos# how many pixels is the whole mat at this level?
+    p_img = 2.0^zoom# how many pixels is the whole mat at this level?
     ppe = p_img/mat.shape[0] # how many pixels per elem at this level?
     if ppe > 16.0:
         # pixels too big, don't render
         pass
+    pos = pos.split("_")
     full_img = scipy.misc.imresize(mat, (p_img, p_img))
+    # get the coords in this image
+    # get the appropriate data
+    ts = options.get(tilesize, 256)
+    bounds = [pos[0]*ts, pos[0]*(ts+1), pos[1]*ts, pos[1]*(ts+1)] # xmin xmax ymin ymax
+    # TODO offsets for cropped elements?
+    # TODO how do I want to render the png?
+    # TODO value as alpha, take in options.color
+    options.color
     return 0
 
 # metadata file generation
@@ -146,10 +155,11 @@ def set_cache(args):
         else:
             break
     options = {}
+    options.color = request.args.get("color", "blue")
     uid = str(hash(str(args)))[1:]
     # hash of params in deterministic order
     if not uid in cache:
-        CACHE[uid] = {"mat": operate(mats, request.args.get("ops"), request.args.get("threshold")), "options": options}
+        CACHE[uid] = {"mat": operate(mats, args.get("ops"), args.get("threshold")), "options": options}
     return uid
 
 
