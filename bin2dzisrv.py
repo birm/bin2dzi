@@ -200,3 +200,6 @@ def image_get(uid, level, fn):
         return send_img(mat_img(CACHE[uid].mat, level, fn, CACHE[uid].options))
     else:
         return 404
+
+if __name__ == "__main__":
+    app.run()
